@@ -14,6 +14,9 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
 import authReducer from "./store/reducers/auth";
+import configureAuthStore from "./hooks-store/authStore";
+
+configureAuthStore();
 
 const composeEnhancers =
   process.env.NODE_ENV === "development"

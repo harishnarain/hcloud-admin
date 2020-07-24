@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
@@ -10,6 +9,9 @@ import Menu from "@material-ui/core/Menu";
 import Fade from "@material-ui/core/Fade";
 
 import Aux from "../../../hoc/Aux/Aux";
+import { useStore } from '../../../hooks-store/store';
+import signIn from '../../auth/signIn';
+import signOut from '../../auth/signOut';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -24,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const AppBarItems = (props) => {
+  const [state, dispatch] = useStore(true);
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -34,6 +37,16 @@ const AppBarItems = (props) => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const signInHandler = () => {
+    dispatch("AUTH_START");
+    signIn();
+  };
+
+  const signOutHandler = () => {
+    dispatch("AUTH_CLEAR_STATUS");
+    signOut(state.auth.username);
   };
 
   return (
@@ -64,14 +77,14 @@ const AppBarItems = (props) => {
             onClose={handleClose}
             TransitionComponent={Fade}
           >
-            <MenuItem component={Link} to="/logout">
+            <MenuItem onClick={signOutHandler}>
               Logout
             </MenuItem>
           </Menu>
         </div>
       ) : null}
       {!props.isAuthenticated ? (
-        <Button color="inherit" component={Link} to="/auth">
+        <Button color="inherit" onClick={signInHandler}>
           Sign in
         </Button>
       ) : null}

@@ -1,5 +1,4 @@
 import React from "react";
-import { connect } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
 import CssBaseLine from "@material-ui/core/CssBaseline";
@@ -7,6 +6,7 @@ import CssBaseLine from "@material-ui/core/CssBaseline";
 import Aux from "../Aux/Aux";
 import ToolbarComponent from "../../components/Navigation/ToolbarComponent/ToolbarComponent";
 import SideDrawer from "../../components/Navigation/SideDrawer/SideDrawer";
+import { useStore } from "../../hooks-store/store";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,13 +28,14 @@ const useStyles = makeStyles((theme) => ({
 
 const Layout = (props) => {
   const classes = useStyles();
+  const state = useStore(true)[0];
 
   return (
     <Aux>
       <div className={classes.root}>
         <CssBaseLine />
-        <ToolbarComponent isAuth={props.isAuthenticated} />
-        <SideDrawer />
+        <ToolbarComponent isAuth={state.auth.isAuthenticated} />
+        {state.auth.isAuthenticated ? <SideDrawer /> : null}
         <main className={classes.content}>
           <div className={classes.toolbar} />
           {props.children}
@@ -44,10 +45,4 @@ const Layout = (props) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    isAuthenticated: state.auth.idToken !== null,
-  };
-};
-
-export default connect(mapStateToProps)(Layout);
+export default Layout;
