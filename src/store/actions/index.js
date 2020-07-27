@@ -1,5 +1,3 @@
-export { setAuthRedirectPath } from "./auth";
-
 export {
   fetchUsers,
   fetchUsersStart,

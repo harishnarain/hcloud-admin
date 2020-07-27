@@ -4,7 +4,6 @@ import Typography from "@material-ui/core/Typography";
 
 import { useStore } from "../../hooks-store/store";
 import checkAccount from "../../components/auth/checkAccount";
-import acquireToken from "../../components/auth/acquireToken";
 
 const Main = () => {
   const [state, dispatch] = useStore(true);
@@ -18,16 +17,6 @@ const Main = () => {
     });
     // eslint-disable-next-line
   }, []);
-
-  const acquireTokenHandler = () => {
-    if (state.auth.username !== null) {
-      acquireToken(state.auth.username).then((response) => {
-        dispatch("AUTH_UPDATE_TOKEN", response);
-      });
-    } else {
-      console.error("No user logged in");
-    }
-  };
 
   return (
     <div>

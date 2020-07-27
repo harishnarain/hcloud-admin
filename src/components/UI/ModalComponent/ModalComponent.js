@@ -50,7 +50,7 @@ const ModalComponent = (props) => {
     <Aux>
       <BackdropComponent show={props.show} clicked={props.modalClosed} />
       <Modal
-        open={open}
+        open={props.show ? open : !open}
         onClose={handleClose}
         aria-describedby="modal-description"
       >

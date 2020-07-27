@@ -31,6 +31,8 @@ import axios from "../../axios-users";
 import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
 import * as actions from "../../store/actions/index";
 import Spinner from "../../components/UI/Spinner/Spinner";
+import { useStore } from "../../hooks-store/store";
+import acquireToken from "../../components/auth/acquireToken";
 
 const descendingComparator = (a, b, orderBy) => {
   if (b[orderBy] < a[orderBy]) {
@@ -293,9 +295,18 @@ const useStyles = makeStyles((theme) => ({
 
 const Users = (props) => {
   const { onFetchUsers } = props;
+  const [state, dispatch] = useStore(true);
 
   useEffect(() => {
-    onFetchUsers(props.token);
+    acquireToken(state.auth.username)
+      .then((response) => {
+        dispatch("AUTH_UPDATE_TOKEN", response);
+        onFetchUsers(response.accessToken);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    // eslint-disable-next-line
   }, [onFetchUsers]);
 
   const classes = useStyles();
@@ -438,7 +449,6 @@ const mapStateToProps = (state) => {
   return {
     users: state.user.users,
     loading: state.user.loading,
-    token: state.auth.token,
   };
 };
 

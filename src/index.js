@@ -13,7 +13,7 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
-import authReducer from "./store/reducers/auth";
+//import authReducer from "./store/reducers/auth";
 import configureAuthStore from "./hooks-store/authStore";
 
 configureAuthStore();
@@ -24,7 +24,7 @@ const composeEnhancers =
     : null || compose;
 
 const rootReducer = combineReducers({
-  auth: authReducer,
+  //auth: authReducer,
   user: userReducer,
 });
 
