@@ -226,11 +226,6 @@ const EnhancedTableToolbar = (props) => {
 
       {numSelected > 0 ? (
         <Aux>
-          <Tooltip title="Edit User">
-            <IconButton aria-label="edit">
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
           <Tooltip title="Delete User">
             <IconButton aria-label="delete">
               <DeleteIcon />
@@ -332,19 +327,19 @@ const Users = (props) => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = props.users.map((n) => n.name);
+      const newSelecteds = props.users.map((user) => user.id);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
   };
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -368,7 +363,7 @@ const Users = (props) => {
     setPage(0);
   };
 
-  const isSelected = (name) => selected.indexOf(name) !== -1;
+  const isSelected = (id) => selected.indexOf(id) !== -1;
 
   const emptyRows =
     rowsPerPage -
@@ -382,7 +377,7 @@ const Users = (props) => {
         {stableSort(props.users, getComparator(order, orderBy))
           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
           .map((user, index) => {
-            const isItemSelected = isSelected(user.name);
+            const isItemSelected = isSelected(user.id);
             const labelId = `enhanced-table-checkbox-${index}`;
 
             return (
@@ -402,7 +397,7 @@ const Users = (props) => {
                   />
                 </TableCell>
                 <User
-                  key={user.id}
+                  id={user.id}
                   labelId={labelId}
                   name={user.displayName}
                   email={user.userPrincipalName}
