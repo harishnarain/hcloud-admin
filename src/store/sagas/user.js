@@ -6,9 +6,16 @@ import * as actions from "../actions/index";
 export function* fetchUsersSaga(action) {
   yield put(actions.fetchUsersStart());
   //const queryParams = '?auth=' + action.token + '&orderBy="userId"&equalTo="' + action.userId + '"';
+  //const queryParams = '?$filter=startswith(displayName,\'' + action.query + '\')';
+  let queryParams = "";
+  if (action.query) {
+    queryParams = "?$filter=startswith(displayName,'" + action.query + "')";
+  }
+  console.log(queryParams);
   try {
     //const response = yield axios.get('/users.json' + queryParams);
-    const response = yield axios.get("users/", {
+
+    const response = yield axios.get("users" + queryParams, {
       headers: {
         Authorization: `Bearer ${action.token}`,
       },

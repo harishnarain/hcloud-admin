@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import clsx from "clsx";
@@ -33,6 +33,7 @@ import * as actions from "../../store/actions/index";
 import Spinner from "../../components/UI/Spinner/Spinner";
 import { useStore } from "../../hooks-store/store";
 import acquireToken from "../../components/auth/acquireToken";
+import useDebounce from "../../shared/useDebounce";
 
 const descendingComparator = (a, b, orderBy) => {
   if (b[orderBy] < a[orderBy]) {
@@ -250,6 +251,7 @@ const EnhancedTableToolbar = (props) => {
               input: classes.inputInput,
             }}
             inputProps={{ "aria-label": "search" }}
+            onChange={props.changed}
           />
           <Tooltip title="Filter list">
             <IconButton aria-label="filter list">
@@ -296,25 +298,31 @@ const useStyles = makeStyles((theme) => ({
 const Users = (props) => {
   const { onFetchUsers } = props;
   const [state, dispatch] = useStore(true);
-
-  useEffect(() => {
-    acquireToken(state.auth.username)
-      .then((response) => {
-        dispatch("AUTH_UPDATE_TOKEN", response);
-        onFetchUsers(response.accessToken);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    // eslint-disable-next-line
-  }, [onFetchUsers]);
-
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("name");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [query, setQuery] = useState("");
+
+  const debouncedQuery = useDebounce(query, 500);
+
+  useEffect(() => {
+    if (state.auth.accessToken) {
+      onFetchUsers(state.auth.accessToken, "search", debouncedQuery);
+    } else {
+      acquireToken(state.auth.username)
+        .then((response) => {
+          dispatch("AUTH_UPDATE_TOKEN", response);
+          onFetchUsers(response.accessToken, "search");
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+    // eslint-disable-next-line
+  }, [onFetchUsers, debouncedQuery]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -366,12 +374,59 @@ const Users = (props) => {
     rowsPerPage -
     Math.min(rowsPerPage, props.users.length - page * rowsPerPage);
 
-  let users = <Spinner />;
+  let users = null;
 
   if (!props.loading) {
     users = (
+      <TableBody>
+        {stableSort(props.users, getComparator(order, orderBy))
+          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map((user, index) => {
+            const isItemSelected = isSelected(user.name);
+            const labelId = `enhanced-table-checkbox-${index}`;
+
+            return (
+              <TableRow
+                hover
+                onClick={(event) => handleClick(event, user.id)}
+                role="checkbox"
+                aria-checked={isItemSelected}
+                tabIndex={-1}
+                key={user.id}
+                selected={isItemSelected}
+              >
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={isItemSelected}
+                    inputProps={{ "aria-labelledby": labelId }}
+                  />
+                </TableCell>
+                <User
+                  key={user.id}
+                  labelId={labelId}
+                  name={user.displayName}
+                  email={user.userPrincipalName}
+                  orgId={user.companyName}
+                />
+              </TableRow>
+            );
+          })}
+        {emptyRows > 0 && (
+          <TableRow style={{ height: 53 * emptyRows }}>
+            <TableCell colSpan={6} />
+          </TableRow>
+        )}
+      </TableBody>
+    );
+  }
+
+  return (
+    <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar numSelected={selected.length} />
+        <EnhancedTableToolbar
+          numSelected={selected.length}
+          changed={(event) => setQuery(event.target.value)}
+        />
         <TableContainer>
           <Table
             className={classes.table}
@@ -388,45 +443,7 @@ const Users = (props) => {
               onRequestSort={handleRequestSort}
               rowCount={props.users.length}
             />
-            <TableBody>
-              {stableSort(props.users, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((user, index) => {
-                  const isItemSelected = isSelected(user.name);
-                  const labelId = `enhanced-table-checkbox-${index}`;
-
-                  return (
-                    <TableRow
-                      hover
-                      onClick={(event) => handleClick(event, user.name)}
-                      role="checkbox"
-                      aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={user.id}
-                      selected={isItemSelected}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={isItemSelected}
-                          inputProps={{ "aria-labelledby": labelId }}
-                        />
-                      </TableCell>
-                      <User
-                        key={user.id}
-                        labelId={labelId}
-                        name={user.displayName}
-                        email={user.userPrincipalName}
-                        orgId={user.companyName}
-                      />
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
+            {users}
           </Table>
         </TableContainer>
         <TablePagination
@@ -439,10 +456,8 @@ const Users = (props) => {
           onChangeRowsPerPage={handleChangeRowsPerPage}
         />
       </Paper>
-    );
-  }
-
-  return <div className={classes.root}>{users}</div>;
+    </div>
+  );
 };
 
 const mapStateToProps = (state) => {
@@ -454,7 +469,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onFetchUsers: (token) => dispatch(actions.fetchUsers(token)),
+    onFetchUsers: (token, queryType, query) =>
+      dispatch(actions.fetchUsers(token, queryType, query)),
   };
 };
 

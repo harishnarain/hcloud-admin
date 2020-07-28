@@ -20,9 +20,11 @@ export const fetchUsersStart = () => {
   };
 };
 
-export const fetchUsers = (token) => {
+export const fetchUsers = (token, queryType, query) => {
   return {
     type: actionTypes.FETCH_USERS,
     token: token,
+    queryType: queryType,
+    query: query,
   };
 };

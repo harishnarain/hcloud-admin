@@ -48,6 +48,10 @@ const useStyles = makeStyles((theme) => ({
   drawerContainer: {
     overflow: "auto",
   },
+  menuButton: {
+    justifyContent: "left",
+    paddingLeft: "30px",
+  },
 }));
 
 const SideDrawer = (props) => {
