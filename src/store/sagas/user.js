@@ -34,13 +34,17 @@ export function* fetchUsersSaga(action) {
 export function* deleteUserSaga(action) {
   yield put(actions.deleteUserStart());
   try {
-    // const response = yield axios.delete("users" + '/' + action.id, {
-    //   headers: {
-    //     Authorization: `Bearer ${action.token}`,
-    //   },
-    // });
-    console.log('deleteUserSaga');
+    for (let user in action.users) {
+      const response = yield axios.delete("users" + '/' + action.users[user].id, {
+        headers: {
+          Authorization: `Bearer ${action.token}`,
+        },
+      });
+
+    }
+
+    yield put(actions.deleteUserSuccess());
   } catch (error) {
-    yield put(action.deleteUserFail(error));
+    yield put(actions.deleteUserFail(error));
   }
 }

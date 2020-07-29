@@ -25,7 +25,7 @@ const getTokenRedirect = async (user, request) => {
 
 const acquireToken = (user) => {
   const request = {
-    scopes: ["User.Read"],
+    scopes: ["User.ReadWrite.All"],
     forceRefresh: false,
   };
 

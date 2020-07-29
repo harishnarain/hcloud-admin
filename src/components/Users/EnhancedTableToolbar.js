@@ -12,6 +12,7 @@ import FilterListIcon from "@material-ui/icons/FilterList";
 import InputBase from "@material-ui/core/InputBase";
 import SearchIcon from "@material-ui/icons/Search";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
+import RefreshIcon from "@material-ui/icons/Refresh";
 
 import Aux from "../../hoc/Aux/Aux";
 
@@ -33,7 +34,7 @@ const useToolbarStyles = makeStyles((theme) => ({
   title: {
     flex: "1 1 100%",
   },
-  search: {
+  action: {
     position: "relative",
     borderRadius: theme.shape.borderRadius,
     backgroundColor: fade(theme.palette.common.white, 0.15),
@@ -47,7 +48,7 @@ const useToolbarStyles = makeStyles((theme) => ({
       width: "auto",
     },
   },
-  searchIcon: {
+  actionIcon: {
     padding: theme.spacing(0, 2),
     height: "100%",
     position: "absolute",
@@ -113,21 +114,29 @@ const EnhancedTableToolbar = (props) => {
 
       {numSelected > 0 ? (
         <Aux>
-          <Tooltip title="Delete User">
-            <IconButton aria-label="delete" onClick={props.click}>
+          <Tooltip title="Delete user">
+            <IconButton aria-label="delete" onClick={props.deleteClick}>
               <DeleteIcon />
             </IconButton>
           </Tooltip>
         </Aux>
       ) : (
         <Aux>
-          <div className={classes.search}>
-            <div className={classes.searchIcon}>
+          <div className={classes.action}>
+            <Tooltip title="Refresh users">
+              <IconButton aria-label="refresh" onClick={props.refreshClick}>
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
+          <div className={classes.action}>
+            <div className={classes.actionIcon}>
               <SearchIcon />
             </div>
           </div>
           <InputBase
             placeholder="Search"
+            value={props.value}
             classes={{
               root: classes.inputRoot,
               input: classes.inputInput,

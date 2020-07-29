@@ -29,18 +29,17 @@ export const fetchUsers = (token, queryType, query) => {
   };
 };
 
-export const deleteUser = (token, id) => {
+export const deleteUser = (token, users) => {
   return {
     type: actionTypes.DELETE_USER,
     token: token,
-    id: id,
+    users: users,
   };
 };
 
-export const deleteUserSuccess = (users) => {
+export const deleteUserSuccess = () => {
   return {
     type: actionTypes.DELETE_USER_SUCCESS,
-    users: users,
   };
 };
 
@@ -54,5 +53,11 @@ export const deleteUserFail = (error) => {
 export const deleteUserStart = () => {
   return {
     type: actionTypes.DELETE_USER_START,
+  };
+};
+
+export const deleteUserInit = () => {
+  return {
+    type: actionTypes.DELETE_USER_INIT
   };
 };

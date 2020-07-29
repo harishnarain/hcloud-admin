@@ -4,6 +4,7 @@ import { updateObject } from "../../shared/utility";
 const initialState = {
   users: [],
   loading: false,
+  deleted: false
 };
 
 const fetchUsersStart = (state, action) => {
@@ -27,13 +28,17 @@ const deleteUserStart = (state, action) => {
 
 const deleteUserSuccess = (state, action) => {
   return updateObject(state, {
-    users: action.users,
     loading: false,
+    deleted: true
   });
 };
 
 const deleteUserFail = (state, action) => {
   return updateObject(state, { loading: false });
+};
+
+const deleteUserInit = (state, action) => {
+  return updateObject(state, { deleted: false });
 };
 
 const reducer = (state = initialState, action) => {
@@ -50,6 +55,8 @@ const reducer = (state = initialState, action) => {
       return deleteUserSuccess(state, action);
     case actionTypes.DELETE_USER_FAIL:
       return deleteUserFail(state, action);
+    case actionTypes.DELETE_USER_INIT:
+      return deleteUserInit(state, action);
     default:
       return state;
   }

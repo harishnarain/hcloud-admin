@@ -7,4 +7,5 @@ export {
   deleteUserSuccess,
   deleteUserFail,
   deleteUserStart,
+  deleteUserInit
 } from "./user";

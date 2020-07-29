@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
+import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -19,10 +20,11 @@ import Spinner from "../../components/UI/Spinner/Spinner";
 import { useStore } from "../../hooks-store/store";
 import acquireToken from "../../components/auth/acquireToken";
 import useDebounce from "../../shared/useDebounce";
-import EnhancedTableHead from '../../components/Users/EnhancedTableHead';
-import { getComparator } from '../../components/Users/comparators';
-import { stableSort } from '../../components/Users/sort';
-import EnhancedTableToolbar from '../../components/Users/EnhancedTableToolbar';
+import EnhancedTableHead from "../../components/Users/EnhancedTableHead";
+import { getComparator } from "../../components/Users/comparators";
+import { stableSort } from "../../components/Users/sort";
+import EnhancedTableToolbar from "../../components/Users/EnhancedTableToolbar";
+import DeleteModal from "../../components/Users/UserModal/DeleteModal";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,7 +54,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Users = (props) => {
-  const { onFetchUsers, onDeleteUser } = props;
+  const { onFetchUsers, onDeleteUsers } = props;
   const [state, dispatch] = useStore(true);
   const classes = useStyles();
   const [order, setOrder] = React.useState("asc");
@@ -61,6 +63,7 @@ const Users = (props) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [query, setQuery] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   const debouncedQuery = useDebounce(query, 500);
 
@@ -80,7 +83,15 @@ const Users = (props) => {
     // eslint-disable-next-line
   }, [onFetchUsers, debouncedQuery]);
 
-  const handleDeleteUser = (id) => {
+  const handleRefreshUsers = () => {
+    onFetchUsers(state.auth.accessToken, "search");
+    setQuery("");
+  };
+
+  const handleDeleteUser = (users) => {
+    setDeleteModalOpen(false);
+    onDeleteUsers(state.auth.accessToken, selected);
+    setSelected([]);
   };
 
   const handleRequestSort = (event, property) => {
@@ -91,19 +102,19 @@ const Users = (props) => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = props.users.map((user) => user.id);
+      const newSelecteds = props.users.map((user) => user);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
   };
 
-  const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
+  const handleClick = (event, user) => {
+    const selectedIndex = selected.indexOf(user);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
+      newSelected = newSelected.concat(selected, user);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -134,6 +145,11 @@ const Users = (props) => {
     Math.min(rowsPerPage, props.users.length - page * rowsPerPage);
 
   let users = null;
+  let loading = null;
+
+  if (props.loading) {
+    loading = <Spinner />;
+  }
 
   if (!props.loading) {
     users = (
@@ -141,13 +157,13 @@ const Users = (props) => {
         {stableSort(props.users, getComparator(order, orderBy))
           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
           .map((user, index) => {
-            const isItemSelected = isSelected(user.id);
+            const isItemSelected = isSelected(user);
             const labelId = `enhanced-table-checkbox-${index}`;
 
             return (
               <TableRow
                 hover
-                onClick={(event) => handleClick(event, user.id)}
+                //onClick={(event) => handleClick(event, user.id)}
                 role="checkbox"
                 aria-checked={isItemSelected}
                 tabIndex={-1}
@@ -158,6 +174,7 @@ const Users = (props) => {
                   <Checkbox
                     checked={isItemSelected}
                     inputProps={{ "aria-labelledby": labelId }}
+                    onClick={(event) => handleClick(event, user)}
                   />
                 </TableCell>
                 <User
@@ -185,7 +202,11 @@ const Users = (props) => {
         <EnhancedTableToolbar
           numSelected={selected.length}
           changed={(event) => setQuery(event.target.value)}
-          click={() => handleDeleteUser(selected)}
+          deleteClick={() => {
+            setDeleteModalOpen(true);
+          }}
+          value={query}
+          refreshClick={() => handleRefreshUsers()}
         />
         <TableContainer>
           <Table
@@ -215,7 +236,18 @@ const Users = (props) => {
           onChangePage={handleChangePage}
           onChangeRowsPerPage={handleChangeRowsPerPage}
         />
+        {loading}
       </Paper>
+      <DeleteModal
+        open={deleteModalOpen}
+        onCancel={() => {
+          setDeleteModalOpen(false);
+        }}
+        onDelete={() => {
+          handleDeleteUser(selected);
+        }}
+        users={selected}
+      />
     </div>
   );
 };
@@ -224,6 +256,7 @@ const mapStateToProps = (state) => {
   return {
     users: state.user.users,
     loading: state.user.loading,
+    deleted: state.user.deleted,
   };
 };
 
@@ -231,9 +264,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     onFetchUsers: (token, queryType, query) =>
       dispatch(actions.fetchUsers(token, queryType, query)),
-    onDeleteUser: (token, id) =>
-      dispatch(actions.deleteUser(token, id)),
-
+    onDeleteUsers: (token, users) => dispatch(actions.deleteUser(token, users)),
   };
 };
 
