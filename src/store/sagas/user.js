@@ -11,7 +11,6 @@ export function* fetchUsersSaga(action) {
   if (action.query) {
     queryParams = "?$filter=startswith(displayName,'" + action.query + "')";
   }
-  console.log(queryParams);
   try {
     //const response = yield axios.get('/users.json' + queryParams);
 
@@ -29,5 +28,19 @@ export function* fetchUsersSaga(action) {
     yield put(actions.fetchUsersSuccess(fetchedUsers));
   } catch (error) {
     yield put(actions.fetchUsersFail(error));
+  }
+}
+
+export function* deleteUserSaga(action) {
+  yield put(actions.deleteUserStart());
+  try {
+    // const response = yield axios.delete("users" + '/' + action.id, {
+    //   headers: {
+    //     Authorization: `Bearer ${action.token}`,
+    //   },
+    // });
+    console.log('deleteUserSaga');
+  } catch (error) {
+    yield put(action.deleteUserFail(error));
   }
 }

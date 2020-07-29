@@ -28,3 +28,31 @@ export const fetchUsers = (token, queryType, query) => {
     query: query,
   };
 };
+
+export const deleteUser = (token, id) => {
+  return {
+    type: actionTypes.DELETE_USER,
+    token: token,
+    id: id,
+  };
+};
+
+export const deleteUserSuccess = (users) => {
+  return {
+    type: actionTypes.DELETE_USER_SUCCESS,
+    users: users,
+  };
+};
+
+export const deleteUserFail = (error) => {
+  return {
+    type: actionTypes.DELETE_USER_FAIL,
+    error: error,
+  };
+};
+
+export const deleteUserStart = () => {
+  return {
+    type: actionTypes.DELETE_USER_START,
+  };
+};
