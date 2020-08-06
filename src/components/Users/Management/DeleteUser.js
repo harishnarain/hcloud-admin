@@ -26,7 +26,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function DeleteModal(props) {
+export default function DeleteUser(props) {
   const classes = useStyles();
   let users = null;
 

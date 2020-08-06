@@ -16,7 +16,7 @@ const Spinner = () => {
 
   return (
     <div className={classes.root}>
-      <CircularProgress className={classes.root}/>
+      <CircularProgress className={classes.root} />
     </div>
   );
 };

@@ -35,16 +35,45 @@ export function* deleteUserSaga(action) {
   yield put(actions.deleteUserStart());
   try {
     for (let user in action.users) {
-      const response = yield axios.delete("users" + '/' + action.users[user].id, {
+      // eslint-disable-next-line
+      const response = yield axios.delete("users/" + action.users[user].id, {
         headers: {
           Authorization: `Bearer ${action.token}`,
         },
       });
-
     }
 
     yield put(actions.deleteUserSuccess());
   } catch (error) {
     yield put(actions.deleteUserFail(error));
+  }
+}
+
+export function* addUserSaga(action) {
+  yield put(actions.addUserStart());
+  const mailNickname = action.user.userData.displayname.replace(/\s+/g, "");
+  const user = {
+    accountEnabled: true,
+    givenName: action.user.userData.firstname,
+    surname: action.user.userData.lastname,
+    displayName: action.user.userData.displayname,
+    mailNickname: mailNickname,
+    userPrincipalName: action.user.userData.email,
+    passwordProfile: {
+      forceChangePasswordNextSignIn: true,
+      password: action.user.userData.password,
+    },
+  };
+  try {
+    // eslint-disable-next-line
+    const response = yield axios.post("users", user, {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${action.token}`,
+      },
+    });
+    yield put(actions.addUserSuccess());
+  } catch (error) {
+    yield put(actions.addUserFail(error.response.data.error));
   }
 }

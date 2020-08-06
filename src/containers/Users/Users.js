@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Redirect } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { connect } from "react-redux";
 
 import { makeStyles } from "@material-ui/core/styles";
@@ -24,7 +23,9 @@ import EnhancedTableHead from "../../components/Users/EnhancedTableHead";
 import { getComparator } from "../../components/Users/comparators";
 import { stableSort } from "../../components/Users/sort";
 import EnhancedTableToolbar from "../../components/Users/EnhancedTableToolbar";
-import DeleteModal from "../../components/Users/UserModal/DeleteModal";
+import DeleteUser from "../../components/Users/Management/DeleteUser";
+import useDebounceFunction from "../../shared/useDebounceFunction";
+import AddUser from "../../components/Users/Management/AddUser";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -64,6 +65,7 @@ const Users = (props) => {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [query, setQuery] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [addUserModalOpen, setAddUserModalOpen] = useState(false);
 
   const debouncedQuery = useDebounce(query, 500);
 
@@ -87,6 +89,7 @@ const Users = (props) => {
     onFetchUsers(state.auth.accessToken, "search");
     setQuery("");
   };
+  const debouncedRefreshUsers = useDebounceFunction(handleRefreshUsers, 500);
 
   const handleDeleteUser = (users) => {
     setDeleteModalOpen(false);
@@ -206,7 +209,9 @@ const Users = (props) => {
             setDeleteModalOpen(true);
           }}
           value={query}
-          refreshClick={() => handleRefreshUsers()}
+          //refreshClick={() => handleRefreshUsers()}
+          refreshClick={() => debouncedRefreshUsers()}
+          addUser={() => setAddUserModalOpen(true)}
         />
         <TableContainer>
           <Table
@@ -238,7 +243,7 @@ const Users = (props) => {
         />
         {loading}
       </Paper>
-      <DeleteModal
+      <DeleteUser
         open={deleteModalOpen}
         onCancel={() => {
           setDeleteModalOpen(false);
@@ -247,6 +252,21 @@ const Users = (props) => {
           handleDeleteUser(selected);
         }}
         users={selected}
+      />
+      <AddUser
+        open={addUserModalOpen}
+        onCancel={() => {
+          setAddUserModalOpen(false);
+        }}
+        loading={props.loading}
+        added={props.added}
+        onAdd={(user) => {
+          props.onAddUser(state.auth.accessToken, user);
+        }}
+        error={props.error}
+        onClearState={() => {
+          props.onClearUserState();
+        }}
       />
     </div>
   );
@@ -257,6 +277,8 @@ const mapStateToProps = (state) => {
     users: state.user.users,
     loading: state.user.loading,
     deleted: state.user.deleted,
+    added: state.user.added,
+    error: state.user.error,
   };
 };
 
@@ -265,10 +287,14 @@ const mapDispatchToProps = (dispatch) => {
     onFetchUsers: (token, queryType, query) =>
       dispatch(actions.fetchUsers(token, queryType, query)),
     onDeleteUsers: (token, users) => dispatch(actions.deleteUser(token, users)),
+    onAddUser: (token, user) => dispatch(actions.addUser(token, user)),
+    onClearUserState: () => dispatch(actions.clearUserState()),
   };
 };
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(withErrorHandler(Users, axios));
+// export default connect(
+//   mapStateToProps,
+//   mapDispatchToProps
+// )(withErrorHandler(Users, axios));
+
+export default connect(mapStateToProps, mapDispatchToProps)(Users);

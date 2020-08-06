@@ -105,7 +105,7 @@ const EnhancedTableToolbar = (props) => {
             Users
           </Typography>
           <Tooltip title="Add User">
-            <IconButton aria-label="add">
+            <IconButton aria-label="add" onClick={props.addUser}>
               <PersonAddIcon />
             </IconButton>
           </Tooltip>

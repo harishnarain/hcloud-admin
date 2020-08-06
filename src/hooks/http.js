@@ -1,68 +1,68 @@
-import { useReducer, useCallback } from 'react';
+import { useReducer, useCallback } from "react";
 
 const initialState = {
   loading: false,
   error: null,
   data: null,
   extra: null,
-  identifier: null
+  identifier: null,
 };
 
 const httpReducer = (curHttpState, action) => {
   switch (action.type) {
-    case 'SEND':
+    case "SEND":
       return {
         loading: true,
         error: null,
         data: null,
         extra: null,
-        identifier: action.identifier
+        identifier: action.identifier,
       };
-    case 'RESPONSE':
+    case "RESPONSE":
       return {
         ...curHttpState,
         loading: false,
         data: action.responseData,
-        extra: action.extra
+        extra: action.extra,
       };
-    case 'ERROR':
+    case "ERROR":
       return { loading: false, error: action.errorMessage };
-    case 'CLEAR':
+    case "CLEAR":
       return initialState;
     default:
-      throw new Error('Should not be reached!');
+      throw new Error("Should not be reached!");
   }
 };
 
 const useHttp = () => {
   const [httpState, dispatchHttp] = useReducer(httpReducer, initialState);
 
-  const clear = useCallback(() => dispatchHttp({ type: 'CLEAR' }), []);
+  const clear = useCallback(() => dispatchHttp({ type: "CLEAR" }), []);
 
   const sendRequest = useCallback(
     (url, method, body, reqExtra, reqIdentifer) => {
-      dispatchHttp({ type: 'SEND', identifier: reqIdentifer });
+      dispatchHttp({ type: "SEND", identifier: reqIdentifer });
       fetch(url, {
         method: method,
         body: body,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       })
-        .then(response => {
+        .then((response) => {
           return response.json();
         })
-        .then(responseData => {
+        .then((responseData) => {
           dispatchHttp({
-            type: 'RESPONSE',
+            type: "RESPONSE",
             responseData: responseData,
-            extra: reqExtra
+            extra: reqExtra,
           });
         })
-        .catch(error => {
+        .catch((error) => {
           dispatchHttp({
-            type: 'ERROR',
-            errorMessage: 'Something went wrong!'
+            type: "ERROR",
+            errorMessage: "Something went wrong!",
           });
         });
     },
@@ -76,7 +76,7 @@ const useHttp = () => {
     sendRequest: sendRequest,
     reqExtra: httpState.extra,
     reqIdentifer: httpState.identifier,
-    clear: clear
+    clear: clear,
   };
 };
 

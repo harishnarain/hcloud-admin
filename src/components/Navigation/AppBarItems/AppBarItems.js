@@ -9,9 +9,9 @@ import Menu from "@material-ui/core/Menu";
 import Fade from "@material-ui/core/Fade";
 
 import Aux from "../../../hoc/Aux/Aux";
-import { useStore } from '../../../hooks-store/store';
-import signIn from '../../auth/signIn';
-import signOut from '../../auth/signOut';
+import { useStore } from "../../../hooks-store/store";
+import signIn from "../../auth/signIn";
+import signOut from "../../auth/signOut";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -77,9 +77,7 @@ const AppBarItems = (props) => {
             onClose={handleClose}
             TransitionComponent={Fade}
           >
-            <MenuItem onClick={signOutHandler}>
-              Logout
-            </MenuItem>
+            <MenuItem onClick={signOutHandler}>Logout</MenuItem>
           </Menu>
         </div>
       ) : null}
