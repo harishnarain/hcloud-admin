@@ -64,8 +64,8 @@ const Users = (props) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [query, setQuery] = useState("");
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(null);
 
   const debouncedQuery = useDebounce(query, 500);
 
@@ -92,7 +92,7 @@ const Users = (props) => {
   const debouncedRefreshUsers = useDebounceFunction(handleRefreshUsers, 500);
 
   const handleDeleteUser = (users) => {
-    setDeleteModalOpen(false);
+    setDeleteUser(null);
     onDeleteUsers(state.auth.accessToken, selected);
     setSelected([]);
   };
@@ -199,6 +199,21 @@ const Users = (props) => {
     );
   }
 
+  const handleOpenDeleteUser = () => {
+    setDeleteUser(
+      <DeleteUser
+        open={true}
+        onCancel={() => {
+          setDeleteUser(null);
+        }}
+        onDelete={() => {
+          handleDeleteUser(selected);
+        }}
+        users={selected}
+      />
+    );
+  };
+
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -206,10 +221,9 @@ const Users = (props) => {
           numSelected={selected.length}
           changed={(event) => setQuery(event.target.value)}
           deleteClick={() => {
-            setDeleteModalOpen(true);
+            handleOpenDeleteUser();
           }}
           value={query}
-          //refreshClick={() => handleRefreshUsers()}
           refreshClick={() => debouncedRefreshUsers()}
           addUser={() => setAddUserModalOpen(true)}
         />
@@ -243,16 +257,7 @@ const Users = (props) => {
         />
         {loading}
       </Paper>
-      <DeleteUser
-        open={deleteModalOpen}
-        onCancel={() => {
-          setDeleteModalOpen(false);
-        }}
-        onDelete={() => {
-          handleDeleteUser(selected);
-        }}
-        users={selected}
-      />
+      {deleteUser}
       <AddUser
         open={addUserModalOpen}
         onCancel={() => {
@@ -291,10 +296,5 @@ const mapDispatchToProps = (dispatch) => {
     onClearUserState: () => dispatch(actions.clearUserState()),
   };
 };
-
-// export default connect(
-//   mapStateToProps,
-//   mapDispatchToProps
-// )(withErrorHandler(Users, axios));
 
 export default connect(mapStateToProps, mapDispatchToProps)(Users);
