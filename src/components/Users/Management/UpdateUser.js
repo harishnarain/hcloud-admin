@@ -33,16 +33,16 @@ const Alert = (props) => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 };
 
-const AddUser = (props) => {
+const UpdateUser = (props) => {
   const classes = useStyles();
   const [userForm, setUserForm] = useState({
-    firstname: {
+    givenName: {
       config: {
         type: "text",
-        id: "firstname",
+        id: "givenName",
         label: "First name",
       },
-      value: "",
+      value: props.user.givenName,
       validation: {
         required: true,
         minLength: 1,
@@ -51,13 +51,13 @@ const AddUser = (props) => {
       valid: false,
       touched: false,
     },
-    lastname: {
+    surname: {
       config: {
         type: "text",
-        id: "lastname",
+        id: "surname",
         label: "Last name",
       },
-      value: "",
+      value: props.user.surname,
       validation: {
         required: false,
         maxLength: 64,
@@ -65,13 +65,13 @@ const AddUser = (props) => {
       valid: false,
       touched: false,
     },
-    displayname: {
+    displayName: {
       config: {
         type: "text",
-        id: "displayname",
+        id: "displayName",
         label: "Display name",
       },
-      value: "",
+      value: props.user.displayName,
       validation: {
         required: true,
         minLength: 1,
@@ -80,13 +80,13 @@ const AddUser = (props) => {
       valid: false,
       touched: false,
     },
-    email: {
+    userPrincipalName: {
       config: {
         type: "email",
-        id: "email",
+        id: "userPrincipalName",
         label: "Email address",
       },
-      value: "",
+      value: props.user.userPrincipalName,
       validation: {
         required: true,
         isEmail: true,
@@ -111,32 +111,26 @@ const AddUser = (props) => {
       touched: false,
     },
   });
-
   const [formIsValid, setFormIsValid] = useState(false);
 
-  const validateForm = () => {
-    setFormIsValid(
-      userForm.firstname.valid &&
-        userForm.lastname.valid &&
-        userForm.displayname.valid &&
-        userForm.email.valid &&
-        userForm.password.valid
-    );
+  const validateChangedFields = (field) => {
+    setFormIsValid(field.valid);
   };
 
-  const handleAdd = (event) => {
+  const handleUpdate = (event) => {
     event.preventDefault();
 
     const formData = {};
 
     for (let formElementIdentifier in userForm) {
-      formData[formElementIdentifier] = userForm[formElementIdentifier].value;
+      if (userForm[formElementIdentifier].touched) {
+        formData[formElementIdentifier] = userForm[formElementIdentifier].value;
+      }
     }
     const user = {
       userData: formData,
     };
-
-    props.onAdd(user);
+    props.onUpdate(user, props.user.id);
   };
 
   const inputChangedHandler = (event, inputIdentifier) => {
@@ -151,12 +145,8 @@ const AddUser = (props) => {
     const updatedUserForm = updateObject(userForm, {
       [inputIdentifier]: updatedFormElement,
     });
-    let formIsValid = true;
-    for (let inputIdentifier in updatedUserForm) {
-      formIsValid = updatedUserForm[inputIdentifier].valid && formIsValid;
-    }
     setUserForm(updatedUserForm);
-    validateForm();
+    validateChangedFields(updatedFormElement);
   };
 
   const handleResetState = () => {
@@ -183,36 +173,36 @@ const AddUser = (props) => {
 
   let form = null;
 
-  if (!props.added || props.loading) {
+  if (!props.updated || props.loading) {
     form = (
       <div className={classes.root}>
-        <DialogTitle id="form-dialog-title">{"Add a user"}</DialogTitle>
+        <DialogTitle id="form-dialog-title">{"Update user"}</DialogTitle>
         <DialogContent>
-          <DialogContentText>Fill out details for the user.</DialogContentText>
+          <DialogContentText>Update details for the user.</DialogContentText>
           <Grid container direction={"row"} spacing={6}>
             <Grid item xs={5}>
               <TextField
                 required
                 autoFocus
                 margin="dense"
-                value={userForm.firstname.value}
-                id={userForm.firstname.config.id}
-                label={userForm.firstname.config.label}
-                type={userForm.firstname.config.type}
-                onChange={(event) => inputChangedHandler(event, "firstname")}
-                error={!userForm.firstname.valid && userForm.firstname.touched}
+                value={userForm.givenName.value}
+                id={userForm.givenName.config.id}
+                label={userForm.givenName.config.label}
+                type={userForm.givenName.config.type}
+                onChange={(event) => inputChangedHandler(event, "givenName")}
+                error={!userForm.givenName.valid && userForm.givenName.touched}
                 fullWidth
               />
             </Grid>
             <Grid item xs={5}>
               <TextField
                 margin="dense"
-                value={userForm.lastname.value}
-                id={userForm.lastname.config.id}
-                label={userForm.lastname.config.label}
-                type={userForm.lastname.config.type}
-                onChange={(event) => inputChangedHandler(event, "lastname")}
-                error={!userForm.lastname.valid && userForm.lastname.touched}
+                value={userForm.surname.value}
+                id={userForm.surname.config.id}
+                label={userForm.surname.config.label}
+                type={userForm.surname.config.type}
+                onChange={(event) => inputChangedHandler(event, "surname")}
+                error={!userForm.surname.valid && userForm.surname.touched}
                 fullWidth
               />
             </Grid>
@@ -222,13 +212,13 @@ const AddUser = (props) => {
               <TextField
                 required
                 margin="dense"
-                value={userForm.displayname.value}
-                id={userForm.displayname.config.id}
-                label={userForm.displayname.config.label}
-                type={userForm.displayname.config.type}
-                onChange={(event) => inputChangedHandler(event, "displayname")}
+                value={userForm.displayName.value}
+                id={userForm.displayName.config.id}
+                label={userForm.displayName.config.label}
+                type={userForm.displayName.config.type}
+                onChange={(event) => inputChangedHandler(event, "displayName")}
                 error={
-                  !userForm.displayname.valid && userForm.displayname.touched
+                  !userForm.displayName.valid && userForm.displayName.touched
                 }
                 fullWidth
               />
@@ -239,12 +229,17 @@ const AddUser = (props) => {
               <TextField
                 required
                 margin="dense"
-                value={userForm.email.value}
-                id={userForm.email.config.id}
-                label={userForm.email.config.label}
-                type={userForm.email.config.type}
-                onChange={(event) => inputChangedHandler(event, "email")}
-                error={!userForm.email.valid && userForm.email.touched}
+                value={userForm.userPrincipalName.value}
+                id={userForm.userPrincipalName.config.id}
+                label={userForm.userPrincipalName.config.label}
+                type={userForm.userPrincipalName.config.type}
+                onChange={(event) =>
+                  inputChangedHandler(event, "userPrincipalName")
+                }
+                error={
+                  !userForm.userPrincipalName.valid &&
+                  userForm.userPrincipalName.touched
+                }
                 fullWidth
               />
             </Grid>
@@ -267,16 +262,17 @@ const AddUser = (props) => {
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={handleAdd}
+            onClick={handleUpdate}
             color="primary"
-            disabled={!formIsValid || props.loading}
+            disabled={!formIsValid}
           >
-            Add
+            Update
           </Button>
           <Button
-            onClick={handleResetState}
+            onClick={() => {
+              props.onCancel();
+            }}
             color="secondary"
-            disabled={props.loading}
           >
             Cancel
           </Button>
@@ -286,10 +282,10 @@ const AddUser = (props) => {
   } else {
     form = (
       <div>
-        <DialogTitle id="form-dialog-title">{"Created user"}</DialogTitle>
+        <DialogTitle id="form-dialog-title">{"Updated user"}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            User has been created successfully.
+            User has been updated successfully.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -309,11 +305,7 @@ const AddUser = (props) => {
 
   if (props.error) {
     error = (
-      <Snackbar
-        open={true}
-        autoHideDuration={6000}
-        onClose={handleAlertClose}
-      >
+      <Snackbar open={true} autoHideDuration={6000} onClose={handleAlertClose}>
         <Alert onClose={handleAlertClose} severity="error">
           {props.error.message}
         </Alert>
@@ -326,7 +318,7 @@ const AddUser = (props) => {
       className={classes.root}
       noValidate
       autoComplete="off"
-      onSubmit={handleAdd}
+      onSubmit={handleUpdate}
     >
       <div>
         <Dialog
@@ -347,10 +339,10 @@ const AddUser = (props) => {
 
 const mapStateToProps = (state) => {
   return {
-    added: state.user.added,
+    updated: state.user.updated,
     error: state.user.error,
     loading: state.user.loading,
   };
 };
 
-export default connect(mapStateToProps)(AddUser);
+export default connect(mapStateToProps)(UpdateUser);

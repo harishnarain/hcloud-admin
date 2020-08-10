@@ -12,8 +12,6 @@ import Paper from "@material-ui/core/Paper";
 import Checkbox from "@material-ui/core/Checkbox";
 
 import User from "../../components/Users/User/User";
-import axios from "../../axios-users";
-import withErrorHandler from "../../hoc/withErrorHandler/withErrorHandler";
 import * as actions from "../../store/actions/index";
 import Spinner from "../../components/UI/Spinner/Spinner";
 import { useStore } from "../../hooks-store/store";
@@ -26,6 +24,7 @@ import EnhancedTableToolbar from "../../components/Users/EnhancedTableToolbar";
 import DeleteUser from "../../components/Users/Management/DeleteUser";
 import useDebounceFunction from "../../shared/useDebounceFunction";
 import AddUser from "../../components/Users/Management/AddUser";
+import UpdateUser from "../../components/Users/Management/UpdateUser";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -64,8 +63,9 @@ const Users = (props) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [query, setQuery] = useState("");
-  const [addUserModalOpen, setAddUserModalOpen] = useState(false);
-  const [deleteUser, setDeleteUser] = useState(null);
+  const [deleteUserDialog, setDeleteUserDialog] = useState(null);
+  const [addUserDialog, setAddUserDialog] = useState(null);
+  const [updateUserDialog, setUpdateUserDialog] = useState(null);
 
   const debouncedQuery = useDebounce(query, 500);
 
@@ -92,7 +92,7 @@ const Users = (props) => {
   const debouncedRefreshUsers = useDebounceFunction(handleRefreshUsers, 500);
 
   const handleDeleteUser = (users) => {
-    setDeleteUser(null);
+    setDeleteUserDialog(null);
     onDeleteUsers(state.auth.accessToken, selected);
     setSelected([]);
   };
@@ -167,6 +167,7 @@ const Users = (props) => {
               <TableRow
                 hover
                 //onClick={(event) => handleClick(event, user.id)}
+                onClick={(event) => handleUpdate(user)}
                 role="checkbox"
                 aria-checked={isItemSelected}
                 tabIndex={-1}
@@ -199,17 +200,52 @@ const Users = (props) => {
     );
   }
 
-  const handleOpenDeleteUser = () => {
-    setDeleteUser(
+  const handleDeleteUserDialog = () => {
+    setDeleteUserDialog(
       <DeleteUser
         open={true}
         onCancel={() => {
-          setDeleteUser(null);
+          setDeleteUserDialog(null);
         }}
         onDelete={() => {
           handleDeleteUser(selected);
         }}
         users={selected}
+      />
+    );
+  };
+
+  const handleAddUserDialog = () => {
+    setAddUserDialog(
+      <AddUser
+        open={true}
+        onCancel={() => {
+          setAddUserDialog(null);
+        }}
+        onAdd={(user) => {
+          props.onAddUser(state.auth.accessToken, user);
+        }}
+        onClearState={() => {
+          props.onClearUserState();
+        }}
+      />
+    );
+  };
+
+  const handleUpdate = (user) => {
+    setUpdateUserDialog(
+      <UpdateUser
+        open={true}
+        user={user}
+        onCancel={() => {
+          setUpdateUserDialog(null);
+        }}
+        onUpdate={(user, id) => {
+          props.onUpdateUser(state.auth.accessToken, user, id);
+        }}
+        onClearState={() => {
+          props.onClearUserState();
+        }}
       />
     );
   };
@@ -221,11 +257,11 @@ const Users = (props) => {
           numSelected={selected.length}
           changed={(event) => setQuery(event.target.value)}
           deleteClick={() => {
-            handleOpenDeleteUser();
+            handleDeleteUserDialog();
           }}
           value={query}
           refreshClick={() => debouncedRefreshUsers()}
-          addUser={() => setAddUserModalOpen(true)}
+          addUser={() => handleAddUserDialog()}
         />
         <TableContainer>
           <Table
@@ -257,22 +293,9 @@ const Users = (props) => {
         />
         {loading}
       </Paper>
-      {deleteUser}
-      <AddUser
-        open={addUserModalOpen}
-        onCancel={() => {
-          setAddUserModalOpen(false);
-        }}
-        loading={props.loading}
-        added={props.added}
-        onAdd={(user) => {
-          props.onAddUser(state.auth.accessToken, user);
-        }}
-        error={props.error}
-        onClearState={() => {
-          props.onClearUserState();
-        }}
-      />
+      {deleteUserDialog}
+      {addUserDialog}
+      {updateUserDialog}
     </div>
   );
 };
@@ -293,6 +316,8 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(actions.fetchUsers(token, queryType, query)),
     onDeleteUsers: (token, users) => dispatch(actions.deleteUser(token, users)),
     onAddUser: (token, user) => dispatch(actions.addUser(token, user)),
+    onUpdateUser: (token, user, id) =>
+      dispatch(actions.updateUser(token, user, id)),
     onClearUserState: () => dispatch(actions.clearUserState()),
   };
 };

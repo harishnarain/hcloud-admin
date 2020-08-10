@@ -100,3 +100,37 @@ export const clearUserState = () => {
     type: actionTypes.CLEAR_USER_STATE,
   };
 };
+
+export const updateUser = (token, user, id) => {
+  return {
+    type: actionTypes.UPDATE_USER,
+    token: token,
+    user: user,
+    id: id,
+  };
+};
+
+export const updateUserSuccess = () => {
+  return {
+    type: actionTypes.UPDATE_USER_SUCCESS,
+  };
+};
+
+export const updateUserFail = (error) => {
+  return {
+    type: actionTypes.UPDATE_USER_FAIL,
+    error: error,
+  };
+};
+
+export const updateUserStart = () => {
+  return {
+    type: actionTypes.UPDATE_USER_START,
+  };
+};
+
+export const updateUserInit = () => {
+  return {
+    type: actionTypes.UPDATE_USER_INIT,
+  };
+};

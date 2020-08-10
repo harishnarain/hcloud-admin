@@ -77,3 +77,36 @@ export function* addUserSaga(action) {
     yield put(actions.addUserFail(error.response.data.error));
   }
 }
+
+export function* updateUserSaga(action) {
+  yield put(actions.updateUserStart());
+
+  let userData = {};
+
+  for (let identifier in action.user.userData) {
+    if (identifier === "password") {
+      // Resetting password can only work if Directory.AccessAsUser.All role is assigned.
+      userData = {
+        passwordProfile: {
+          forceChangePasswordNextSignIn: true,
+          password: action.user.userData.password,
+        },
+      };
+    } else {
+      userData[identifier] = action.user.userData[identifier];
+    }
+  }
+
+  try {
+    // eslint-disable-next-line
+    const response = yield axios.patch("users/" + action.id, userData, {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${action.token}`,
+      },
+    });
+    yield put(actions.updateUserSuccess());
+  } catch (error) {
+    yield put(actions.updateUserFail(error.response.data.error));
+  }
+}

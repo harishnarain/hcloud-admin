@@ -14,4 +14,9 @@ export {
   addUserStart,
   addUserInit,
   clearUserState,
+  updateUser,
+  updateUserSuccess,
+  updateUserFail,
+  updateUserStart,
+  updateUserInit,
 } from "./user";

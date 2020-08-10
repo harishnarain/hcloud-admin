@@ -7,6 +7,7 @@ const initialState = {
   deleted: false,
   added: false,
   error: null,
+  updated: false,
 };
 
 const fetchUsersStart = (state, action) => {
@@ -69,7 +70,30 @@ const clearUserState = (state, action) => {
   return updateObject(state, {
     error: null,
     added: false,
+    updated: false,
   });
+};
+
+const updateUserStart = (state, action) => {
+  return updateObject(state, { loading: true });
+};
+
+const updateUserSuccess = (state, action) => {
+  return updateObject(state, {
+    loading: false,
+    updated: true,
+  });
+};
+
+const updateUserFail = (state, action) => {
+  return updateObject(state, {
+    error: action.error,
+    loading: false,
+  });
+};
+
+const updateUserInit = (state, action) => {
+  return updateObject(state, { updated: false });
 };
 
 const reducer = (state = initialState, action) => {
@@ -98,6 +122,14 @@ const reducer = (state = initialState, action) => {
       return addUserInit(state, action);
     case actionTypes.CLEAR_USER_STATE:
       return clearUserState(state, action);
+    case actionTypes.UPDATE_USER_START:
+      return updateUserStart(state, action);
+    case actionTypes.UPDATE_USER_SUCCESS:
+      return updateUserSuccess(state, action);
+    case actionTypes.UPDATE_USER_FAIL:
+      return updateUserFail(state, action);
+    case actionTypes.UPDATE_USER_INIT:
+      return updateUserInit(state, action);
     default:
       return state;
   }
