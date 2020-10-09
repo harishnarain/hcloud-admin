@@ -31,7 +31,7 @@ Update the clientId section of the /src/authConfig.js file to include your speci
 * Axios
 * Material-UI
 
-##License
+## License
 This project uses the Apache 2.0 license
 
 ## Contributing
